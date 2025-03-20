@@ -4,7 +4,7 @@
 VOICE_ROOT_DIR="/Volumes/NO NAME/VOICE" # 空白を含むパスはダブルクォートで囲む
 VOICE_COPY_DIR="${HOME}/.voice_memo"    # ホームディレクトリに保存
 
-# ボイスレコーダーの接続チェック
+# ボイスレコーダーの接続チェックとMP3ファイルの確認
 check_device() {
     echo "ボイスレコーダーの接続を確認中..."
     
@@ -21,34 +21,47 @@ check_device() {
     fi
     
     echo "ボイスレコーダーが正常に接続されています"
+    
+    # MP3ファイルの存在確認
+    echo "${VOICE_ROOT_DIR}内のMP3ファイルを検索中..."
+    find_mp3_files "${VOICE_ROOT_DIR}"
+    
+    if [ ${#MP3_FILES[@]} -eq 0 ]; then
+        echo "${VOICE_ROOT_DIR}内にMP3ファイルが見つかりませんでした"
+        exit 0
+    fi
+    
+    echo "${#MP3_FILES[@]}個のMP3ファイルが見つかりました"
+}
+
+# MP3ファイルをリストアップする関数
+find_mp3_files() {
+    local dir="$1"
+    local mp3_files=()
+    local mp3_count=0
+    
+    # macOS互換の方法でファイルを処理する
+    while IFS= read -r -d $'\0' mp3_file; do
+        mp3_files[mp3_count]="${mp3_file}"
+        ((mp3_count++))
+    done < <(find "${dir}" -name "*.MP3" -print0)
+    
+    # グローバル変数として結果を返す
+    MP3_FILES=("${mp3_files[@]}")
+    return ${mp3_count}
 }
 
 # ボイスレコーダーのデータをコピーする関数
 copy_files() {
-    echo "${VOICE_ROOT_DIR}内のMP3ファイルを検索中..."
-    
-    # macOS互換の方法でファイルを処理する
-    mp3_count=0
-    while IFS= read -r -d $'\0' mp3_file; do
-        mp3_files[mp3_count]="${mp3_file}"
-        ((mp3_count++))
-    done < <(find "${VOICE_ROOT_DIR}" -name "*.MP3" -print0)
-    
-    if [ ${#mp3_files[@]} -eq 0 ]; then
-        echo "${VOICE_ROOT_DIR}内にMP3ファイルが見つかりませんでした"
-        return
-    fi
-    
-    echo "${#mp3_files[@]}個のMP3ファイルが見つかりました"
     
     # 出力先ディレクトリがなければ作成する
     if [ ! -d "${VOICE_COPY_DIR}" ]; then
         mkdir -p "${VOICE_COPY_DIR}"
     fi
     
-    for (( i=0; i<${#mp3_files[@]}; i++ )); do
-        mp3_file="${mp3_files[$i]}"
-        echo "処理中 $((i+1))/${#mp3_files[@]}: ${mp3_file}"
+    for (( i=0; i<${#MP3_FILES[@]}; i++ )); do
+        mp3_file="${MP3_FILES[$i]}"
+        echo "処理中 $((i+1))/${#MP3_FILES[@]}: ${mp3_file}"
         
         # ファイルの更新日時を取得してタイムスタンプ形式に変換
         timestamp=$(date -r "${mp3_file}" "+%Y%m%d_%H%M%S")
@@ -63,25 +76,11 @@ copy_files() {
 
 # ボイスレコーダーのデータを削除する関数
 clean_files() {
-    echo "${VOICE_ROOT_DIR}内のMP3ファイルを検索中..."
+    echo "削除対象のMP3ファイルが${#MP3_FILES[@]}個見つかりました"
     
-    # macOS互換の方法でファイルを処理する
-    mp3_count=0
-    while IFS= read -r -d $'\0' mp3_file; do
-        mp3_files[mp3_count]="${mp3_file}"
-        ((mp3_count++))
-    done < <(find "${VOICE_ROOT_DIR}" -name "*.MP3" -print0)
-    
-    if [ ${#mp3_files[@]} -eq 0 ]; then
-        echo "${VOICE_ROOT_DIR}内にMP3ファイルが見つかりませんでした"
-        return
-    fi
-    
-    echo "削除対象のMP3ファイルが${#mp3_files[@]}個見つかりました"
-    
-    for (( i=0; i<${#mp3_files[@]}; i++ )); do
-        mp3_file="${mp3_files[$i]}"
-        echo "削除中 $((i+1))/${#mp3_files[@]}: ${mp3_file}"
+    for (( i=0; i<${#MP3_FILES[@]}; i++ )); do
+        mp3_file="${MP3_FILES[$i]}"
+        echo "削除中 $((i+1))/${#MP3_FILES[@]}: ${mp3_file}"
         rm "${mp3_file}"
     done
     
