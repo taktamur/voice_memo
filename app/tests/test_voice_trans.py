@@ -12,7 +12,10 @@ import shutil
 import subprocess
 from unittest.mock import patch, MagicMock
 
-from voice_trans import VoiceTrans
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from src.voice_trans import VoiceTrans
 
 
 class TestVoiceTrans(unittest.TestCase):

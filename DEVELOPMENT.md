@@ -30,6 +30,13 @@
 - [x] unittestを動かすタスクを実装
 - [x] アプリを起動するタスクを実装
 
+### Issue #5: pythonソースを app/src/以下に移動する
+
+- [x] Pythonソースファイル（voice_sync.py, voice_trans.py）を app/src/ に移動
+- [x] テストファイルを app/tests/ に移動
+- [x] 各テストファイルのインポートパスを修正
+- [x] Rakefileのパスを修正
+
 ### 将来的な実装
 
 - [ ] GUIアプリケーション化（rumpsを使用）

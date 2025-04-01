@@ -12,7 +12,10 @@ import tempfile
 import shutil
 import subprocess
 from unittest.mock import patch, MagicMock
-from voice_sync import VoiceSync
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from src.voice_sync import VoiceSync
 
 class TestVoiceSync(unittest.TestCase):
     """VoiceSyncクラスのテスト"""
