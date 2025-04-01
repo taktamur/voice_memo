@@ -18,7 +18,7 @@ class VoiceSync:
     def __init__(self):
         # 設定
         self.voice_root_dir = "/Volumes/NO NAME/VOICE"  # ボイスレコーダーのパス
-        self.voice_copy_dir = os.path.expanduser("~/.voice_memo")  # 保存先ディレクトリ
+        self.voice_copy_dir = os.path.expanduser("~/voice_memo")  # 保存先ディレクトリ
         self.mp3_files = []  # 検出されたMP3ファイル
     
     def check_device(self):
