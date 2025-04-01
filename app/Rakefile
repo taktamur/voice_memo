@@ -6,29 +6,29 @@ desc "VoiceMemoアプリケーション用のタスク"
 namespace :test do
   desc "全てのユニットテストを実行"
   task :all do
-    sh "cd #{File.dirname(__FILE__)} && python3 -m unittest discover -v"
+    sh "cd #{File.dirname(__FILE__)} && python3 -m unittest discover -s tests -v"
   end
 
   desc "voice_sync のテストを実行"
   task :sync do
-    sh "cd #{File.dirname(__FILE__)} && python3 -m unittest test_voice_sync.py -v"
+    sh "cd #{File.dirname(__FILE__)} && python3 -m unittest tests.test_voice_sync -v"
   end
 
   desc "voice_trans のテストを実行"
   task :trans do
-    sh "cd #{File.dirname(__FILE__)} && python3 -m unittest test_voice_trans.py -v"
+    sh "cd #{File.dirname(__FILE__)} && python3 -m unittest tests.test_voice_trans -v"
   end
 end
 
 namespace :run do
   desc "ボイスレコーダーからMP3ファイルを同期"
   task :sync do
-    sh "cd #{File.dirname(__FILE__)} && python3 voice_sync.py"
+    sh "cd #{File.dirname(__FILE__)} && python3 -m src.voice_sync"
   end
 
   desc "MP3ファイルをテキストに変換"
   task :trans do
-    sh "cd #{File.dirname(__FILE__)} && python3 voice_trans.py"
+    sh "cd #{File.dirname(__FILE__)} && python3 -m src.voice_trans"
   end
 
   desc "同期してからテキスト変換を実行"
