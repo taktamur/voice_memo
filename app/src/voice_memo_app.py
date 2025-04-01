@@ -224,94 +224,57 @@ class VoiceMemoApp(rumps.App):
     
     def _monitor_usb_devices(self):
         """USBデバイスを監視して、ボイスレコーダーが接続されたら自動処理を実行"""
-        # 注意: この関数を利用するためには watchdog パッケージのインストールが必要:
-        #   pip install watchdog
-        try:
-            from watchdog.observers import Observer
-            from watchdog.events import FileSystemEventHandler
+        # watchdog パッケージが必要
+        from watchdog.observers import Observer
+        from watchdog.events import FileSystemEventHandler
+        
+        class USBDeviceHandler(FileSystemEventHandler):
+            def __init__(self, app):
+                self.app = app
+                self.device_detected = False  # デバイス検出フラグ
             
-            class USBDeviceHandler(FileSystemEventHandler):
-                def __init__(self, app):
-                    self.app = app
-                    self.device_detected = False  # デバイス検出フラグ
-                
-                def on_created(self, event):
-                    if event.is_directory and os.path.basename(event.src_path) == "NO NAME" and not self.device_detected:
-                        # ボイスレコーダーのマウントを検出
-                        self.device_detected = True
-                        voice_sync = VoiceSync()
-                        if voice_sync.check_device():
-                            # デバイスが見つかったら通知
-                            rumps.notification(
-                                title="Voice Memo",
-                                subtitle="デバイス検出",
-                                message="ボイスレコーダーが接続されました。自動処理を開始します。",
-                                sound=True
-                            )
-                            
-                            # 同期処理を実行
-                            self.app._run_voice_sync()
-                            
-                            # 処理完了後にフラグをリセット
-                            def reset_flag():
-                                time.sleep(10)  # 10秒後にフラグをリセット
-                                self.device_detected = False
-                            
-                            # 別スレッドでフラグリセット処理を実行
-                            reset_thread = threading.Thread(target=reset_flag)
-                            reset_thread.daemon = True
-                            reset_thread.start()
-            
-            # オブザーバーの作成
-            observer = Observer()
-            handler = USBDeviceHandler(self)
-            
-            # /Volumes ディレクトリを監視対象に設定
-            observer.schedule(handler, path="/Volumes", recursive=False)
-            observer.start()
-            
-            # 停止フラグが立つまで待機
-            while not self.stop_monitor:
-                time.sleep(1)
-            
-            # 監視を停止
-            observer.stop()
-            observer.join()
-            
-        except ImportError:
-            # watchdogライブラリがインストールされていない場合はポーリング方式にフォールバック
-            print("Watchdogライブラリがインストールされていません。ポーリング方式を使用します。")
-            last_check_time = 0
-            check_interval = 2.0  # 2秒ごとにチェック
-            
-            while not self.stop_monitor:
-                current_time = time.time()
-                
-                # 一定間隔でチェック
-                if current_time - last_check_time >= check_interval:
-                    last_check_time = current_time
-                    
-                    # ボイスレコーダーの接続を確認
-                    voice_path = "/Volumes/NO NAME"
-                    if os.path.exists(voice_path):
-                        voice_sync = VoiceSync()
-                        if voice_sync.check_device():
-                            # デバイスが見つかったら通知
-                            rumps.notification(
-                                title="Voice Memo",
-                                subtitle="デバイス検出",
-                                message="ボイスレコーダーが接続されました。自動処理を開始します。",
-                                sound=True
-                            )
-                            
-                            # 同期処理を実行
-                            self._run_voice_sync()
-                            
-                            # 処理後にしばらく待機（同じデバイスを再検出しないように）
-                            time.sleep(10)
-                
-                # スレッドの負荷を抑えるために少し待機
-                time.sleep(0.5)
+            def on_created(self, event):
+                if event.is_directory and os.path.basename(event.src_path) == "NO NAME" and not self.device_detected:
+                    # ボイスレコーダーのマウントを検出
+                    self.device_detected = True
+                    voice_sync = VoiceSync()
+                    if voice_sync.check_device():
+                        # デバイスが見つかったら通知
+                        rumps.notification(
+                            title="Voice Memo",
+                            subtitle="デバイス検出",
+                            message="ボイスレコーダーが接続されました。自動処理を開始します。",
+                            sound=True
+                        )
+                        
+                        # 同期処理を実行
+                        self.app._run_voice_sync()
+                        
+                        # 処理完了後にフラグをリセット
+                        def reset_flag():
+                            time.sleep(10)  # 10秒後にフラグをリセット
+                            self.device_detected = False
+                        
+                        # 別スレッドでフラグリセット処理を実行
+                        reset_thread = threading.Thread(target=reset_flag)
+                        reset_thread.daemon = True
+                        reset_thread.start()
+        
+        # オブザーバーの作成
+        observer = Observer()
+        handler = USBDeviceHandler(self)
+        
+        # /Volumes ディレクトリを監視対象に設定
+        observer.schedule(handler, path="/Volumes", recursive=False)
+        observer.start()
+        
+        # 停止フラグが立つまで待機
+        while not self.stop_monitor:
+            time.sleep(1)
+        
+        # 監視を停止
+        observer.stop()
+        observer.join()
     
     @rumps.clicked("設定")
     def preferences(self, _):
