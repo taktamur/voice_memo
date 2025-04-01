@@ -35,6 +35,22 @@ namespace :run do
   task :all => ['run:sync', 'run:trans'] do
     puts "同期とテキスト変換が完了しました"
   end
+
+  desc "Voice Memoアプリを実行"
+  task :app do
+    sh "cd #{File.dirname(__FILE__)} && python3 -m src.voice_memo_app"
+  end
+  
+  desc "Voice Memoアプリをデバッグモード（自動終了あり）で実行"
+  task :app_debug do
+    sh "cd #{File.dirname(__FILE__)} && python3 -m src.voice_memo_app --debug"
+  end
+  
+  desc "Voice Memoアプリをデバッグモードで指定秒数後に自動終了"
+  task :app_debug_timed, [:seconds] do |t, args|
+    seconds = args[:seconds] || 10
+    sh "cd #{File.dirname(__FILE__)} && python3 -m src.voice_memo_app --debug --quit-after=#{seconds}"
+  end
 end
 
 task :default => "test:all"
