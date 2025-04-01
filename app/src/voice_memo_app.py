@@ -8,9 +8,13 @@ Voice Memo App - 音声メモアプリケーション
 
 import rumps
 import sys
+import os
 import argparse
 import threading
 import time
+import subprocess
+from voice_sync import VoiceSync
+from voice_trans import VoiceTrans
 
 class VoiceMemoApp(rumps.App):
     """Voice Memoアプリケーションのメインクラス"""
@@ -27,26 +31,287 @@ class VoiceMemoApp(rumps.App):
             "ボイスメモをコピー",
             "テキスト起こし",
             None,  # セパレータ
+            rumps.MenuItem("自動検出", callback=self.toggle_auto_detection),
             "設定"
         ]
+        
+        # 自動検出の有効/無効フラグ
+        self.auto_detection_enabled = False
+        self.menu["自動検出"].state = self.auto_detection_enabled
+        
+        # USBデバイス監視スレッド
+        self.usb_monitor_thread = None
+        self.stop_monitor = False
     
     @rumps.clicked("ボイスメモをコピー")
     def copy_voice_memos(self, _):
         """ボイスメモをコピーする機能"""
-        rumps.alert(
-            title="Voice Memo",
-            message="この機能は未実装です",
-            ok="OK"
-        )
+        try:
+            # 別スレッドで実行して、UIをブロックしないようにする
+            threading.Thread(target=self._run_voice_sync).start()
+        except Exception as e:
+            rumps.alert(
+                title="エラー",
+                message=f"ボイスメモのコピー中にエラーが発生しました: {str(e)}",
+                ok="OK"
+            )
+    
+    def _run_voice_sync(self):
+        """VoiceSyncを実行する内部メソッド"""
+        try:
+            self.title = "処理中..."
+            voice_sync = VoiceSync()
+            if voice_sync.check_device():
+                # デバイスが正常にマウントされている場合
+                result = voice_sync.run()
+                if result:
+                    rumps.notification(
+                        title="Voice Memo",
+                        subtitle="処理完了",
+                        message="ボイスメモの同期が完了しました",
+                        sound=True
+                    )
+                else:
+                    rumps.notification(
+                        title="Voice Memo",
+                        subtitle="処理エラー",
+                        message="ボイスメモの同期中にエラーが発生しました",
+                        sound=True
+                    )
+            else:
+                # デバイスが見つからない場合
+                rumps.notification(
+                    title="Voice Memo",
+                    subtitle="デバイスエラー",
+                    message="ボイスレコーダーが接続されていないか、認識できません",
+                    sound=True
+                )
+        except Exception as e:
+            rumps.notification(
+                title="Voice Memo",
+                subtitle="エラー",
+                message=f"処理中にエラーが発生しました: {str(e)}",
+                sound=True
+            )
+        finally:
+            self.title = "Voice Memo"
     
     @rumps.clicked("テキスト起こし")
     def transcribe_voice_memos(self, _):
         """ボイスメモをテキスト起こしする機能"""
-        rumps.alert(
-            title="Voice Memo",
-            message="この機能は未実装です",
-            ok="OK"
-        )
+        try:
+            # 別スレッドで実行して、UIをブロックしないようにする
+            threading.Thread(target=self._run_voice_trans).start()
+        except Exception as e:
+            rumps.alert(
+                title="エラー",
+                message=f"テキスト起こし中にエラーが発生しました: {str(e)}",
+                ok="OK"
+            )
+    
+    def _run_voice_trans(self):
+        """VoiceTransを実行する内部メソッド"""
+        try:
+            self.title = "処理中..."
+            voice_trans = VoiceTrans()
+            
+            # MP3ファイルの検索
+            if not voice_trans.find_mp3_files():
+                rumps.notification(
+                    title="Voice Memo",
+                    subtitle="情報",
+                    message="MP3ファイルが見つかりませんでした",
+                    sound=True
+                )
+                self.title = "Voice Memo"
+                return
+            
+            # 未処理ファイルの検索
+            if not voice_trans.find_unprocessed_files():
+                rumps.notification(
+                    title="Voice Memo",
+                    subtitle="情報",
+                    message="テキスト起こしが必要なファイルはありません",
+                    sound=True
+                )
+                self.title = "Voice Memo"
+                return
+            
+            # 進捗表示用のスレッド
+            def update_progress():
+                while True:
+                    processed, total, percentage = voice_trans.get_progress()
+                    if total > 0:
+                        self.title = f"処理中... {percentage}%"
+                    
+                    # 全て処理完了、または中断された場合
+                    if processed >= total:
+                        break
+                    
+                    time.sleep(1)
+            
+            progress_thread = threading.Thread(target=update_progress)
+            progress_thread.daemon = True
+            progress_thread.start()
+            
+            # テキスト起こし処理を実行
+            result = voice_trans.transcribe_all()
+            
+            if result:
+                rumps.notification(
+                    title="Voice Memo",
+                    subtitle="処理完了",
+                    message="すべてのMP3ファイルのテキスト起こしが完了しました",
+                    sound=True
+                )
+            else:
+                rumps.notification(
+                    title="Voice Memo",
+                    subtitle="処理警告",
+                    message="一部のファイルの処理中にエラーが発生しました",
+                    sound=True
+                )
+        except Exception as e:
+            rumps.notification(
+                title="Voice Memo",
+                subtitle="エラー",
+                message=f"処理中にエラーが発生しました: {str(e)}",
+                sound=True
+            )
+        finally:
+            self.title = "Voice Memo"
+    
+    def toggle_auto_detection(self, sender):
+        """USBデバイスの自動検出を有効/無効にする"""
+        self.auto_detection_enabled = not self.auto_detection_enabled
+        sender.state = self.auto_detection_enabled
+        
+        if self.auto_detection_enabled:
+            # 自動検出を開始
+            rumps.notification(
+                title="Voice Memo",
+                subtitle="自動検出",
+                message="ボイスレコーダーの自動検出を開始しました",
+                sound=False
+            )
+            self.start_usb_monitor()
+        else:
+            # 自動検出を停止
+            rumps.notification(
+                title="Voice Memo",
+                subtitle="自動検出",
+                message="ボイスレコーダーの自動検出を停止しました",
+                sound=False
+            )
+            self.stop_usb_monitor()
+    
+    def start_usb_monitor(self):
+        """USBデバイス監視スレッドを開始"""
+        if self.usb_monitor_thread is not None and self.usb_monitor_thread.is_alive():
+            return  # すでに実行中
+        
+        self.stop_monitor = False
+        self.usb_monitor_thread = threading.Thread(target=self._monitor_usb_devices)
+        self.usb_monitor_thread.daemon = True
+        self.usb_monitor_thread.start()
+    
+    def stop_usb_monitor(self):
+        """USBデバイス監視スレッドを停止"""
+        self.stop_monitor = True
+        if self.usb_monitor_thread is not None:
+            self.usb_monitor_thread.join(timeout=1.0)
+            self.usb_monitor_thread = None
+    
+    def _monitor_usb_devices(self):
+        """USBデバイスを監視して、ボイスレコーダーが接続されたら自動処理を実行"""
+        # 注意: この関数を利用するためには watchdog パッケージのインストールが必要:
+        #   pip install watchdog
+        try:
+            from watchdog.observers import Observer
+            from watchdog.events import FileSystemEventHandler
+            
+            class USBDeviceHandler(FileSystemEventHandler):
+                def __init__(self, app):
+                    self.app = app
+                    self.device_detected = False  # デバイス検出フラグ
+                
+                def on_created(self, event):
+                    if event.is_directory and os.path.basename(event.src_path) == "NO NAME" and not self.device_detected:
+                        # ボイスレコーダーのマウントを検出
+                        self.device_detected = True
+                        voice_sync = VoiceSync()
+                        if voice_sync.check_device():
+                            # デバイスが見つかったら通知
+                            rumps.notification(
+                                title="Voice Memo",
+                                subtitle="デバイス検出",
+                                message="ボイスレコーダーが接続されました。自動処理を開始します。",
+                                sound=True
+                            )
+                            
+                            # 同期処理を実行
+                            self.app._run_voice_sync()
+                            
+                            # 処理完了後にフラグをリセット
+                            def reset_flag():
+                                time.sleep(10)  # 10秒後にフラグをリセット
+                                self.device_detected = False
+                            
+                            # 別スレッドでフラグリセット処理を実行
+                            reset_thread = threading.Thread(target=reset_flag)
+                            reset_thread.daemon = True
+                            reset_thread.start()
+            
+            # オブザーバーの作成
+            observer = Observer()
+            handler = USBDeviceHandler(self)
+            
+            # /Volumes ディレクトリを監視対象に設定
+            observer.schedule(handler, path="/Volumes", recursive=False)
+            observer.start()
+            
+            # 停止フラグが立つまで待機
+            while not self.stop_monitor:
+                time.sleep(1)
+            
+            # 監視を停止
+            observer.stop()
+            observer.join()
+            
+        except ImportError:
+            # watchdogライブラリがインストールされていない場合はポーリング方式にフォールバック
+            print("Watchdogライブラリがインストールされていません。ポーリング方式を使用します。")
+            last_check_time = 0
+            check_interval = 2.0  # 2秒ごとにチェック
+            
+            while not self.stop_monitor:
+                current_time = time.time()
+                
+                # 一定間隔でチェック
+                if current_time - last_check_time >= check_interval:
+                    last_check_time = current_time
+                    
+                    # ボイスレコーダーの接続を確認
+                    voice_path = "/Volumes/NO NAME"
+                    if os.path.exists(voice_path):
+                        voice_sync = VoiceSync()
+                        if voice_sync.check_device():
+                            # デバイスが見つかったら通知
+                            rumps.notification(
+                                title="Voice Memo",
+                                subtitle="デバイス検出",
+                                message="ボイスレコーダーが接続されました。自動処理を開始します。",
+                                sound=True
+                            )
+                            
+                            # 同期処理を実行
+                            self._run_voice_sync()
+                            
+                            # 処理後にしばらく待機（同じデバイスを再検出しないように）
+                            time.sleep(10)
+                
+                # スレッドの負荷を抑えるために少し待機
+                time.sleep(0.5)
     
     @rumps.clicked("設定")
     def preferences(self, _):
@@ -71,12 +336,20 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Voice Memo アプリケーション')
     parser.add_argument('--debug', action='store_true', help='デバッグモードで実行（10秒後に自動終了）')
     parser.add_argument('--quit-after', type=int, default=10, help='指定秒数後に自動終了（デバッグモード使用時のみ有効、デフォルト: 10秒）')
+    parser.add_argument('--auto-detect', action='store_true', help='起動時にUSBデバイスの自動検出を有効にする')
     args = parser.parse_args()
     
     # デバッグモードを有効化
     rumps.debug_mode(True)
     
     app = VoiceMemoApp()
+    
+    # 自動検出オプションが指定されている場合
+    if args.auto_detect:
+        app.auto_detection_enabled = True
+        app.menu["自動検出"].state = True
+        app.start_usb_monitor()
+        print("USBデバイスの自動検出が有効化されました")
     
     # デバッグモードの場合、自動終了タイマーを設定
     if args.debug:
