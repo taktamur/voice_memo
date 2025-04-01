@@ -35,6 +35,16 @@ namespace :run do
   task :all => ['run:sync', 'run:trans'] do
     puts "同期とテキスト変換が完了しました"
   end
+
+  desc "Voice Memoアプリを実行"
+  task :app do
+    sh "cd #{File.dirname(__FILE__)} && python3 -m src.voice_memo_app"
+  end
+  
+  desc "py2appを使用してアプリをビルド"
+  task :build do
+    sh "cd #{File.dirname(__FILE__)} && python3 setup.py py2app"
+  end
 end
 
 task :default => "test:all"
