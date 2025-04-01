@@ -10,6 +10,7 @@ import os
 import sys
 import tempfile
 import shutil
+import subprocess
 from unittest.mock import patch, MagicMock
 from voice_sync import VoiceSync
 
@@ -77,11 +78,18 @@ class TestVoiceSync(unittest.TestCase):
         # テスト用のMP3ファイルリストをセット
         self.voice_sync.mp3_files = ["/Volumes/NO NAME/VOICE/A/REC001.MP3"]
         
-        # getmtimeのモック
-        mock_getmtime.return_value = 1617235200  # 2021-04-01 00:00:00
+        # getmtimeのモック - タイムスタンプをモック
+        mock_getmtime.return_value = 1617235200  # 2021-04-01 00:00:00 UTC
         
-        # コピー処理を実行
-        self.voice_sync.copy_files()
+        # datetime.fromtimestampの振る舞いをモック
+        with patch('datetime.datetime') as mock_datetime:
+            # モックされた日時オブジェクトを設定
+            mock_dt = MagicMock()
+            mock_dt.strftime.return_value = "20210401_000000"
+            mock_datetime.fromtimestamp.return_value = mock_dt
+            
+            # コピー処理を実行
+            self.voice_sync.copy_files()
         
         # コピー先のパスを検証
         expected_dest = os.path.join(self.temp_dir, "20210401_000000.MP3")
