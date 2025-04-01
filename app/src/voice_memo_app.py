@@ -13,14 +13,28 @@ import argparse
 import threading
 import time
 import subprocess
+import logging
 from voice_sync import VoiceSync
 from voice_trans import VoiceTrans
 from voice_monitor import USBMonitor
+
+# ルートロガーの設定
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
+
+# アプリケーションロガー
+logger = logging.getLogger("voice_memo_app")
 
 class VoiceMemoApp(rumps.App):
     """Voice Memoアプリケーションのメインクラス"""
     
     def __init__(self):
+        logger.debug("VoiceMemoAppの初期化を開始します...")
         super(VoiceMemoApp, self).__init__(
             "Voice Memo",  # アプリ名
             # アイコンはとりあえずなし
@@ -41,7 +55,9 @@ class VoiceMemoApp(rumps.App):
         self.menu["自動検出"].state = self.auto_detection_enabled
         
         # USBデバイス監視
+        logger.debug("USBMonitorを初期化します...")
         self.usb_monitor = USBMonitor(self._run_voice_sync)
+        logger.debug("VoiceMemoAppの初期化が完了しました")
     
     @rumps.clicked("ボイスメモをコピー")
     def copy_voice_memos(self, _):
@@ -183,11 +199,13 @@ class VoiceMemoApp(rumps.App):
     
     def toggle_auto_detection(self, sender):
         """USBデバイスの自動検出を有効/無効にする"""
+        logger.debug("自動検出の切り替え操作が実行されました")
         self.auto_detection_enabled = not self.auto_detection_enabled
         sender.state = self.auto_detection_enabled
         
         if self.auto_detection_enabled:
             # 自動検出を開始
+            logger.info("USBデバイス自動検出を有効化します")
             rumps.notification(
                 title="Voice Memo",
                 subtitle="自動検出",
@@ -195,8 +213,10 @@ class VoiceMemoApp(rumps.App):
                 sound=False
             )
             self.usb_monitor.start()
+            logger.debug("USBデバイス監視が開始されました")
         else:
             # 自動検出を停止
+            logger.info("USBデバイス自動検出を無効化します")
             rumps.notification(
                 title="Voice Memo",
                 subtitle="自動検出",
@@ -204,6 +224,7 @@ class VoiceMemoApp(rumps.App):
                 sound=False
             )
             self.usb_monitor.stop()
+            logger.debug("USBデバイス監視が停止されました")
     
     @rumps.clicked("設定")
     def preferences(self, _):
@@ -224,30 +245,42 @@ def auto_quit(seconds, app):
     rumps.quit_application()
 
 if __name__ == "__main__":
+    # アプリケーション起動ログ
+    logger.info("Voice Memo アプリケーションを起動しています...")
+    
     # コマンドライン引数の処理
     parser = argparse.ArgumentParser(description='Voice Memo アプリケーション')
     parser.add_argument('--debug', action='store_true', help='デバッグモードで実行（10秒後に自動終了）')
     parser.add_argument('--quit-after', type=int, default=10, help='指定秒数後に自動終了（デバッグモード使用時のみ有効、デフォルト: 10秒）')
     parser.add_argument('--auto-detect', action='store_true', help='起動時にUSBデバイスの自動検出を有効にする')
     args = parser.parse_args()
+    logger.debug(f"コマンドライン引数: debug={args.debug}, quit-after={args.quit_after}, auto-detect={args.auto_detect}")
     
     # デバッグモードを有効化
     rumps.debug_mode(True)
+    logger.debug("rumpsデバッグモードを有効化しました")
     
+    # アプリケーションインスタンスの作成
+    logger.debug("VoiceMemoAppインスタンスを作成します...")
     app = VoiceMemoApp()
     
     # 自動検出オプションが指定されている場合
     if args.auto_detect:
+        logger.info("起動時の自動検出オプションが有効です")
         app.auto_detection_enabled = True
         app.menu["自動検出"].state = True
         app.usb_monitor.start()
+        logger.info("USBデバイスの自動検出が有効化されました")
         print("USBデバイスの自動検出が有効化されました")
     
     # デバッグモードの場合、自動終了タイマーを設定
     if args.debug:
         quit_time = args.quit_after
+        logger.info(f"デバッグモード: {quit_time}秒後に自動終了します")
         threading.Thread(target=auto_quit, args=(quit_time, app), daemon=True).start()
         print(f"デバッグモード有効: {quit_time}秒後に自動終了します")
     
     # アプリケーション実行
+    logger.info("アプリケーションのメインループを開始します")
     app.run()
+    logger.info("アプリケーションを終了します")
