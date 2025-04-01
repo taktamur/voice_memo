@@ -7,6 +7,10 @@ Voice Memo App - 音声メモアプリケーション
 """
 
 import rumps
+import sys
+import argparse
+import threading
+import time
 
 class VoiceMemoApp(rumps.App):
     """Voice Memoアプリケーションのメインクラス"""
@@ -55,9 +59,30 @@ class VoiceMemoApp(rumps.App):
         window.run()
 
 
+def auto_quit(seconds, app):
+    """指定した秒数後にアプリケーションを終了する"""
+    print(f"デバッグモード: {seconds}秒後に自動終了します")
+    time.sleep(seconds)
+    print("自動終了します")
+    rumps.quit_application()
+
 if __name__ == "__main__":
+    # コマンドライン引数の処理
+    parser = argparse.ArgumentParser(description='Voice Memo アプリケーション')
+    parser.add_argument('--debug', action='store_true', help='デバッグモードで実行（10秒後に自動終了）')
+    parser.add_argument('--quit-after', type=int, default=10, help='指定秒数後に自動終了（デバッグモード使用時のみ有効、デフォルト: 10秒）')
+    args = parser.parse_args()
+    
     # デバッグモードを有効化
     rumps.debug_mode(True)
     
+    app = VoiceMemoApp()
+    
+    # デバッグモードの場合、自動終了タイマーを設定
+    if args.debug:
+        quit_time = args.quit_after
+        threading.Thread(target=auto_quit, args=(quit_time, app), daemon=True).start()
+        print(f"デバッグモード有効: {quit_time}秒後に自動終了します")
+    
     # アプリケーション実行
-    VoiceMemoApp().run()
+    app.run()

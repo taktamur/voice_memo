@@ -10,20 +10,39 @@ Voice MemoはmacOSのステータスバーに常駐し、ボイスレコーダ�
 
 ## 実行方法
 
-### 開発モードで実行
+### 通常実行
 ```bash
 cd /path/to/voice_memo/app
 python src/voice_memo_app.py
 ```
 
-### スタンドアロンアプリをビルド
+### Rakeを使った実行
 ```bash
 cd /path/to/voice_memo/app
-python setup.py py2app
+rake run:app
 ```
 
-ビルドが完了すると、`dist` ディレクトリに `Voice Memo.app` が作成されます。
-このアプリケーションを Applications フォルダにドラッグ＆ドロップしてインストールできます。
+### デバッグモード（10秒で自動終了）
+```bash
+cd /path/to/voice_memo/app
+python src/voice_memo_app.py --debug
+```
+または
+```bash
+cd /path/to/voice_memo/app
+rake run:app_debug
+```
+
+### デバッグモード（指定秒数で自動終了）
+```bash
+cd /path/to/voice_memo/app
+python src/voice_memo_app.py --debug --quit-after=5  # 5秒後に終了
+```
+または
+```bash
+cd /path/to/voice_memo/app
+rake run:app_debug_timed[5]  # 5秒後に終了
+```
 
 ## 注意事項
 現在のバージョンは機能の実装フレームワークのみを提供しています。実際の機能は今後実装される予定です。
