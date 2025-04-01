@@ -14,7 +14,7 @@ class VoiceMemoApp(rumps.App):
     def __init__(self):
         super(VoiceMemoApp, self).__init__(
             "Voice Memo",  # アプリ名
-            icon="🎤",     # アイコン（絵文字を使用）
+            # アイコンはとりあえずなし
             quit_button="終了"  # 終了ボタンのテキスト
         )
         
