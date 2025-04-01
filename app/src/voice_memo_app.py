@@ -39,9 +39,8 @@ class VoiceMemoApp(rumps.App):
         self.auto_detection_enabled = False
         self.menu["自動検出"].state = self.auto_detection_enabled
         
-        # USBデバイス監視スレッド
-        self.usb_monitor_thread = None
-        self.stop_monitor = False
+        # USBデバイス監視
+        self.observer = None
     
     @rumps.clicked("ボイスメモをコピー")
     def copy_voice_memos(self, _):
@@ -206,21 +205,19 @@ class VoiceMemoApp(rumps.App):
             self.stop_usb_monitor()
     
     def start_usb_monitor(self):
-        """USBデバイス監視スレッドを開始"""
-        if self.usb_monitor_thread is not None and self.usb_monitor_thread.is_alive():
+        """USBデバイス監視を開始"""
+        if self.observer is not None and self.observer.is_alive():
             return  # すでに実行中
         
-        self.stop_monitor = False
-        self.usb_monitor_thread = threading.Thread(target=self._monitor_usb_devices)
-        self.usb_monitor_thread.daemon = True
-        self.usb_monitor_thread.start()
+        # 監視イベントハンドラを設定
+        threading.Thread(target=self._monitor_usb_devices).start()
     
     def stop_usb_monitor(self):
-        """USBデバイス監視スレッドを停止"""
-        self.stop_monitor = True
-        if self.usb_monitor_thread is not None:
-            self.usb_monitor_thread.join(timeout=1.0)
-            self.usb_monitor_thread = None
+        """USBデバイス監視を停止"""
+        if self.observer is not None:
+            self.observer.stop()
+            self.observer.join()
+            self.observer = None
     
     def _monitor_usb_devices(self):
         """USBデバイスを監視して、ボイスレコーダーが接続されたら自動処理を実行"""
@@ -261,20 +258,14 @@ class VoiceMemoApp(rumps.App):
                         reset_thread.start()
         
         # オブザーバーの作成
-        observer = Observer()
+        self.observer = Observer()
         handler = USBDeviceHandler(self)
         
         # /Volumes ディレクトリを監視対象に設定
-        observer.schedule(handler, path="/Volumes", recursive=False)
-        observer.start()
+        self.observer.schedule(handler, path="/Volumes", recursive=False)
+        self.observer.start()
         
-        # 停止フラグが立つまで待機
-        while not self.stop_monitor:
-            time.sleep(1)
-        
-        # 監視を停止
-        observer.stop()
-        observer.join()
+        # このスレッドを終了すると自動的にObserverは終了する
     
     @rumps.clicked("設定")
     def preferences(self, _):
