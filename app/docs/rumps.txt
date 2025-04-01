@@ -1,0 +1,1201 @@
+├── CHANGES.rst
+├── README.rst
+└── docs
+    ├── App.rst
+    ├── MenuItem.rst
+    ├── Response.rst
+    ├── Timer.rst
+    ├── Window.rst
+    ├── alert.rst
+    ├── application_support.rst
+    ├── classes.rst
+    ├── clicked.rst
+    ├── creating.rst
+    ├── debug_mode.rst
+    ├── debugging.rst
+    ├── examples.rst
+    ├── functions.rst
+    ├── index.rst
+    ├── notification.rst
+    ├── notifications.rst
+    ├── quit_application.rst
+    ├── timerfunc.rst
+    └── timers.rst
+
+
+/CHANGES.rst:
+--------------------------------------------------------------------------------
+  1 | Changes
+  2 | =======
+  3 | 
+  4 | 0.4.0 (2022-10-14)
+  5 | ------------------
+  6 | 
+  7 | - Automatically display windows in light or dark mode #162
+  8 | - Allow copy, paste, etc #150
+  9 | - Allow notifications to be displayed in DND #179
+ 10 | - Add event hooks, enable multiple event handlers #140
+ 11 | - Allow menu items to be hidden #138
+ 12 | - Fix dark mode alert style #137
+ 13 | - Notifications: fixes, cleanup, and tests #131
+ 14 | - Fix slider for some older macOS versions (10.11 and before?)
+ 15 | - Keyboard interrupts now stop a running application
+ 16 | 
+ 17 | 
+ 18 | 0.3.0 (2019-02-01)
+ 19 | ------------------
+ 20 | 
+ 21 | - Fix passing data in notifications
+ 22 | - Add `other` and `icon_path` options to ``alert``
+ 23 | - Add `secure` option to ``Window``
+ 24 | - Add `action_button`, `other_button`, and `reply_button` options to ``notification``
+ 25 | - Add ``slider``
+ 26 | 
+ 27 | 
+ 28 | 0.2.2 (2017-04-26)
+ 29 | ------------------
+ 30 | 
+ 31 | - Add template icon support for dark menubar theme.
+ 32 | - Fix inability to create notification center by creating ``Info.plist`` file at executable directory with `CFBundleIdentifier` on installation. If that failed, provide more information at runtime in the exception about how to fix the problem.
+ 33 | - Add Python 3 support
+ 34 | 
+ 35 | 
+ 36 | 0.2.1 (2014-12-13)
+ 37 | ------------------
+ 38 | 
+ 39 | - No longer have to set menu explicitly
+ 40 |     + rumps will create the menu as it parses paths in ``clicked`` decorators
+ 41 | - Reverted change to `timers` that produced a list of weak references rather than objects
+ 42 | - New keyword arguments
+ 43 |     + `key` for ``clicked``
+ 44 |     + `debug` for ``App.run``
+ 45 | 
+ 46 | 
+ 47 | 0.2.0 (2014-08-09)
+ 48 | ------------------
+ 49 | 
+ 50 | **Improvements and compatibility fixes**
+ 51 | 
+ 52 | - Added a large number of docstrings
+ 53 | - Merged pull request allowing unicode text
+ 54 | - Compatibility fixes for Python 2.6
+ 55 |     + Included OrderedDict recipe
+ 56 |     + _TIMERS not using weakref.WeakSet
+ 57 | - Compatibility fixes for Mac OS X versions prior to 10.8 (Notification Center)
+ 58 |     + Attempting to send a notification on <10.8 will raise ``RuntimeError``
+ 59 | - Added ``quit_application`` function to allow for both custom quit buttons and running clean up code before quitting
+ 60 | 
+ 61 | **API changes**
+ 62 | 
+ 63 | - Most api changes dealt with accepting ``None`` as a parameter to use or restore a default setting
+ 64 | - Raise ``TypeError`` before less obvious exceptions occur in PyObjC
+ 65 | - alert and Window
+ 66 |     + No required parameters
+ 67 |     + Passing a string as `cancel` parameter will change the button text to that string
+ 68 |     + `Window.add_button` now requires a string
+ 69 | - App
+ 70 |     + `name` parameter must be a string and `title` must be either a string or ``None``
+ 71 |     + Added `quit_button` parameter allowing custom text or disabling completely by passing ``None``
+ 72 | - MenuItem
+ 73 |     + Passing ``None`` as `callback` parameter to `MenuItem.set_callback` method will disable the callback function and grey out the menu item
+ 74 |     + passing an invalid sequence for `dimensions` parameter to `MenuItem.set_icon` will no longer silently error
+ 75 | 
+ 76 | 
+ 77 | 0.1.5 (2014-08-03)
+ 78 | ------------------
+ 79 | 
+ 80 | - Fix implemented for NSInvalidArgumentException issue on 10.9.x
+ 81 | 
+ 82 | 
+ 83 | 0.1.4 (2013-08-21)
+ 84 | ------------------
+ 85 | 
+ 86 | - Menu class subclassing ListDict, a subclass of OrderedDict with additional insertion operations
+ 87 | - ``update`` method of Menu works like old App.menu parsing - consumes various nested Python containers and creates menus
+ 88 | 
+ 89 | 
+ 90 | 0.1.3 (2013-08-19)
+ 91 | ------------------
+ 92 | 
+ 93 | - ``separator`` global for marking menu separators (in addition to None in context of a menu)
+ 94 | - Can now have separators in sub menus using either ``separator`` or None
+ 95 | - Key and menu title not matching doesn't raise an exception since the situation would occur if the title is changed dynamically
+ 96 |     + Instead, a warning in the log
+ 97 | - Refactored MenuItem such that it subclasses new Menu class
+ 98 | - Menu class created
+ 99 |     + Wraps NSMenu using __setitem__, __delitem__, etc.
+100 |     + Allows for main menu to be easily changed during runtime as it now uses Menu class instead of vanilla OrderedDict
+101 |     + ``clear`` method for MenuItem + other irrelevant methods inherited from OrderedDict raise NotImplementedError
+102 | - As result of refactoring, could simplify menu parsing for App
+103 | 
+104 | 
+105 | 0.1.2 (2013-08-11)
+106 | ------------------
+107 | 
+108 | - Interval access and modification added to Timer objects
+109 | - timers function for iterating over timers
+110 | - Timer class now directly in module namespace
+111 | - More specfic case for trying callback with instance of App subclass as first argument
+112 |     + Point is to avoid catching a completely different TypeError, then sending 2 variables to a function consuming 1
+113 | 
+114 | 
+115 | 0.1.1 (2013-08-07)
+116 | ------------------
+117 | 
+118 | - Parsing data structures for creating menus is now more robust
+119 | - Fixed MenuItem __repr__ for printing instances where no callback function has been given
+120 | - Added ``example_menu.py`` to examples serving also as a test for new MenuItem changes
+121 | - Can now ``del`` MenuItems of submenus and it will be reflected in the actual menu
+122 | - ``add`` method for more convenient addition of MenuItems to a MenuItem's submenu
+123 | - Created module docstring
+124 | 
+125 | 
+126 | 0.1.0 (2013-07-31)
+127 | ------------------
+128 | 
+129 | - world, hello! meet rumps.
+130 | 
+
+
+--------------------------------------------------------------------------------
+/README.rst:
+--------------------------------------------------------------------------------
+  1 | rumps
+  2 | =====
+  3 | 
+  4 | **R**\ idiculously **U**\ ncomplicated **m**\ acOS **P**\ ython **S**\ tatusbar apps.
+  5 | 
+  6 | .. image:: https://raw.github.com/jaredks/rumps/master/examples/rumps_example.png
+  7 | 
+  8 | .. code-block:: python
+  9 | 
+ 10 |     import rumps
+ 11 | 
+ 12 |     class AwesomeStatusBarApp(rumps.App):
+ 13 |         @rumps.clicked("Preferences")
+ 14 |         def prefs(self, _):
+ 15 |             rumps.alert("jk! no preferences available!")
+ 16 | 
+ 17 |         @rumps.clicked("Silly button")
+ 18 |         def onoff(self, sender):
+ 19 |             sender.state = not sender.state
+ 20 | 
+ 21 |         @rumps.clicked("Say hi")
+ 22 |         def sayhi(self, _):
+ 23 |             rumps.notification("Awesome title", "amazing subtitle", "hi!!1")
+ 24 | 
+ 25 |     if __name__ == "__main__":
+ 26 |         AwesomeStatusBarApp("Awesome App").run()
+ 27 | 
+ 28 | How fun!?
+ 29 | 
+ 30 | ``rumps`` can greatly shorten the code required to generate a working app. No ``PyObjC`` underscore syntax required!
+ 31 | 
+ 32 | 
+ 33 | Use case
+ 34 | --------
+ 35 | 
+ 36 | ``rumps`` is for any console-based program that would benefit from a simple configuration toolbar or launch menu.
+ 37 | 
+ 38 | Good for:
+ 39 | 
+ 40 | * Notification-center-based app
+ 41 | * Controlling daemons / launching separate programs
+ 42 | * Updating simple info from web APIs on a timer
+ 43 | 
+ 44 | Not good for:
+ 45 | 
+ 46 | * Any app that is first and foremost a GUI application
+ 47 | 
+ 48 | 
+ 49 | Required
+ 50 | --------
+ 51 | 
+ 52 | * PyObjC
+ 53 | * Python 2.6+
+ 54 | 
+ 55 | Mac OS X 10.6 was shipped with Python 2.6 as the default version and PyObjC has been included in the default Python
+ 56 | since Mac OS X 10.5. If you're using Mac OS X 10.6+ and the default Python that came with it, then ``rumps`` should be
+ 57 | good to go!
+ 58 | 
+ 59 | 
+ 60 | Recommended
+ 61 | -----------
+ 62 | 
+ 63 | * py2app
+ 64 | 
+ 65 | For creating standalone apps, just make sure to include ``rumps`` in the ``packages`` list. Most simple statusbar-based
+ 66 | apps are just "background" apps (no icon in the dock; inability to tab to the application) so it is likely that you
+ 67 | would want to set ``'LSUIElement'`` to ``True``. A basic ``setup.py`` would look like,
+ 68 | 
+ 69 | .. code-block:: python
+ 70 | 
+ 71 |     from setuptools import setup
+ 72 | 
+ 73 |     APP = ['example_class.py']
+ 74 |     DATA_FILES = []
+ 75 |     OPTIONS = {
+ 76 |         'argv_emulation': True,
+ 77 |         'plist': {
+ 78 |             'LSUIElement': True,
+ 79 |         },
+ 80 |         'packages': ['rumps'],
+ 81 |     }
+ 82 | 
+ 83 |     setup(
+ 84 |         app=APP,
+ 85 |         data_files=DATA_FILES,
+ 86 |         options={'py2app': OPTIONS},
+ 87 |         setup_requires=['py2app'],
+ 88 |     )
+ 89 | 
+ 90 | With this you can then create a standalone,
+ 91 | 
+ 92 | .. code-block:: bash
+ 93 | 
+ 94 |     python setup.py py2app
+ 95 | 
+ 96 | 
+ 97 | Installation
+ 98 | ------------
+ 99 | 
+100 | Using pip,
+101 | 
+102 | .. code-block:: bash
+103 | 
+104 |     pip install rumps
+105 | 
+106 | Or from source,
+107 | 
+108 | .. code-block:: bash
+109 | 
+110 |     python setup.py install
+111 | 
+112 | Both of which will require ``sudo`` if installing in a system-wide location.
+113 | 
+114 | 
+115 | Virtual Environments
+116 | --------------------
+117 | 
+118 | There are issues with using ``virtualenv`` because of the way the Python
+119 | executable is copied. Although ``rumps`` attempts to apply a fix (hack) during
+120 | the install process, it is not suggested to use ``virtualenv``.
+121 | 
+122 | To ensure proper functionality, either use ``venv`` (packaged with Python 3) or
+123 | create a standalone app using ``py2app``.
+124 | 
+125 | .. code-block:: bash
+126 | 
+127 |     python3 -m venv env
+128 | 
+129 | 
+130 | Documentation
+131 | -------------
+132 | 
+133 | Documentation is available at http://rumps.readthedocs.org
+134 | 
+135 | 
+136 | License
+137 | -------
+138 | 
+139 | "Modified BSD License". See LICENSE for details. Copyright Jared Suttles, 2020.
+140 | 
+141 | Works Made With rumps
+142 | ---------------------
+143 | 
+144 | `20twenty20 - eohomegrownapps
+145 | <https://github.com/eohomegrownapps/20twenty20/>`_
+146 | 
+147 | `42-CanITakeCoffee - avallete
+148 | <https://github.com/avallete/42-CanITakeCoffee/>`_
+149 | 
+150 | `air-quality-app - grtfou
+151 | <https://github.com/grtfou/air-quality-app/>`_
+152 | 
+153 | `Airplane - C-Codes
+154 | <https://github.com/C-Codes/Airplane/>`_
+155 | 
+156 | `allbar - raphaelhuefner
+157 | <https://github.com/raphaelhuefner/allbar/>`_
+158 | 
+159 | `allofthelights - kenkeiter
+160 | <https://github.com/kenkeiter/allofthelights/>`_
+161 | 
+162 | `attendee-tool-mlh - Bucknalla
+163 | <https://github.com/Bucknalla/attendee-tool-mlh/>`_
+164 | 
+165 | `Auroratain - Matt-McConway
+166 | <https://github.com/Matt-McConway/Auroratain/>`_
+167 | 
+168 | `AutoSSP - viktyz
+169 | <https://github.com/viktyz/AutoSSP/>`_
+170 | 
+171 | `AutoVPN - shadyabhi
+172 | <https://github.com/shadyabhi/AutoVPN/>`_
+173 | 
+174 | `BackgroundsForReddit - karlaugsten
+175 | <https://github.com/karlaugsten/BackgroundsForReddit/>`_
+176 | 
+177 | `bink - e40
+178 | <https://github.com/e40/bink/>`_
+179 | 
+180 | `bitracker - JZChen
+181 | <https://github.com/JZChen/bitracker/>`_
+182 | 
+183 | `BluetoothEvent - lostman-github
+184 | <https://github.com/lostman-github/BluetoothEvent/>`_
+185 | 
+186 | `break-timer - jjmojojjmojo
+187 | <https://github.com/jjmojojjmojo/break-timer/>`_
+188 | 
+189 | `breaker - amloewi
+190 | <https://github.com/amloewi/breaker/>`_
+191 | 
+192 | `bundle-checker - jeffgodwyll
+193 | <https://github.com/jeffgodwyll/bundle-checker/>`_
+194 | 
+195 | `c1t1 - e9t
+196 | <https://github.com/e9t/c1t1/>`_
+197 | 
+198 | `CamAlert - MrBananaPants
+199 | <https://github.com/MrBananaPants/CamAlert/>`_
+200 | 
+201 | `camsketch - pdubroy
+202 | <https://github.com/pdubroy/camsketch/>`_
+203 | 
+204 | `casita - david-kuehn
+205 | <https://github.com/david-kuehn/casita/>`_
+206 | 
+207 | `ChargeMon - RhetTbull
+208 | <https://github.com/RhetTbull/ChargeMon/>`_
+209 | 
+210 | `ComicStreamer - beville
+211 | <https://github.com/beville/ComicStreamer/>`_
+212 | 
+213 | `commitwatch - chrisfosterelli
+214 | <https://github.com/chrisfosterelli/commitwatch/>`_
+215 | 
+216 | `ComMute - cwverhey
+217 | <https://github.com/cwverhey/ComMute/>`_
+218 | 
+219 | `computer-time - rbrich
+220 | <https://github.com/rbrich/computer-time/>`_
+221 | 
+222 | `crypto-ticker-macOS - mqulateen
+223 | <https://github.com/mqulateen/crypto-ticker-macOS/>`_
+224 | 
+225 | `cryptocoin-quotes - Sayan98
+226 | <https://github.com/Sayan98/cryptocoin-quotes/>`_
+227 | 
+228 | `cuco - jjuanda
+229 | <https://github.com/jjuanda/cuco/>`_
+230 | 
+231 | `currency-converter - ahmedelgohary
+232 | <https://github.com/ahmedelgohary/currency-converter/>`_
+233 | 
+234 | `dns.app - damln
+235 | <https://github.com/damln/dns.app/>`_
+236 | 
+237 | `Dokky - rogierkn
+238 | <https://github.com/rogierkn/Dokky/>`_
+239 | 
+240 | `dolar_bitcoin - celis
+241 | <https://github.com/celis/dolar_bitcoin/>`_
+242 | 
+243 | `duplicati - duplicati
+244 | <https://github.com/duplicati/duplicati/>`_
+245 | 
+246 | `dysonMacOS - fhenwood
+247 | <https://github.com/fhenwood/dysonMacOS>`_
+248 | 
+249 | `earth - nickrobson
+250 | <https://github.com/nickrobson/earth/>`_
+251 | 
+252 | `ForceNapClone - hroftgit
+253 | <https://github.com/hroftgit/ForceNapClone/>`_
+254 | 
+255 | `freelan-bar - privacee
+256 | <https://github.com/privacee/freelan-bar/>`_
+257 | 
+258 | `g-assistant-mac - agucova
+259 | <https://github.com/agucova/g-assistant-mac/>`_
+260 | 
+261 | `gapa - ozlerhakan
+262 | <https://github.com/ozlerhakan/gapa/>`_
+263 | 
+264 | `GitSyncApp - jachin
+265 | <https://github.com/jachin/GitSyncApp/>`_
+266 | 
+267 | `Gumpy - RobGraham
+268 | <https://github.com/RobGraham/Gumpy/>`_
+269 | 
+270 | `Habitus - kmundnic
+271 | <https://github.com/kmundnic/Habitus/>`_
+272 | 
+273 | `HalfCaff - dougn
+274 | <https://github.com/dougn/HalfCaff/>`_
+275 | 
+276 | `happymac - laffra
+277 | <https://github.com/laffra/happymac/>`_
+278 | 
+279 | `harmenubar - vekkt0r
+280 | <https://github.com/vekkt0r/harmenubar/>`_
+281 | 
+282 | `hatarake - kfdm-archive
+283 | <https://github.com/kfdm-archive/hatarake/>`_
+284 | 
+285 | `HipStatus - jamfit
+286 | <https://github.com/jamfit/HipStatus/>`_
+287 | 
+288 | `hp-lorem - jamesrampton
+289 | <https://github.com/jamesrampton/hp-lorem/>`_
+290 | 
+291 | `hs100-status-bar - craig-davis
+292 | <https://github.com/craig-davis/hs100-status-bar/>`_
+293 | 
+294 | `iBatteryStats - saket13
+295 | <https://github.com/saket13/iBatteryStats/>`_
+296 | 
+297 | `iBrew - Tristan79
+298 | <https://github.com/Tristan79/iBrew/>`_
+299 | 
+300 | `idiot - snare
+301 | <https://github.com/snare/idiot/>`_
+302 | 
+303 | `interlocking - jrauch
+304 | <https://github.com/jrauch/interlocking/>`_
+305 | 
+306 | `istat - Lingdu0
+307 | <https://github.com/Lingdu0/istat/>`_
+308 | 
+309 | `keynote_snap - sasn0
+310 | <https://github.com/sasn0/keynote_snap/>`_
+311 | 
+312 | `Keypad - jelmer04
+313 | <https://github.com/jelmer04/Keypad/>`_
+314 | 
+315 | `keyringo - tokenizecx
+316 | <https://github.com/tokenizecx/keyringo/>`_
+317 | 
+318 | `kizkiz - TkTech
+319 | <https://github.com/TkTech/kizkiz/>`_
+320 | 
+321 | `koinex-status-ticker - kirantambe
+322 | <https://github.com/kirantambe/koinex-status-ticker/>`_
+323 | 
+324 | `leaguefriend - pandarison
+325 | <https://github.com/pandarison/leaguefriend/>`_
+326 | 
+327 | `LifxController - mitchmcdee
+328 | <https://github.com/mitchmcdee/LifxController/>`_
+329 | 
+330 | `lil_ip_toolbar - mchlrtkwski
+331 | <https://github.com/mchlrtkwski/lil_ip_toolbar/>`_
+332 | 
+333 | `mac-shrew - mejmo
+334 | <https://github.com/mejmo/mac-shrew/>`_
+335 | 
+336 | `MacFaceID - vkalia602
+337 | <https://github.com/vkalia602/MacFaceID/>`_
+338 | 
+339 | `majo-v - r4lv
+340 | <https://github.com/r4lv/majo-v/>`_
+341 | 
+342 | `MBatteryApp - Elliot-Potts
+343 | <https://github.com/Elliot-Potts/MBatteryApp/>`_
+344 | 
+345 | `McBing - bagabont
+346 | <https://github.com/bagabont/McBing/>`_
+347 | 
+348 | `Memcode - aroraenterprise
+349 | <https://github.com/aroraenterprise/Memcode/>`_
+350 | 
+351 | `memdam - joshalbrecht
+352 | <https://github.com/joshalbrecht/memdam/>`_
+353 | 
+354 | `MenuBarGmail - rcmdnk
+355 | <https://github.com/rcmdnk/MenuBarGmail/>`_
+356 | 
+357 | `MenuPing - Julien Bordet
+358 | <https://github.com/julienbordet/MenuPing/>`_
+359 | 
+360 | `midi2dmx - davidbistolas
+361 | <https://github.com/davidbistolas/midi2dmx/>`_
+362 | 
+363 | `monero-ticker - Cisplatin
+364 | <https://github.com/Cisplatin/monero-ticker/>`_
+365 | 
+366 | `MoodLight - kretash
+367 | <https://github.com/kretash/MoodLight/>`_
+368 | 
+369 | `MoonTicker - skxu
+370 | <https://github.com/skxu/MoonTicker/>`_
+371 | 
+372 | `musicbar - russelg
+373 | <https://github.com/russelg/musicbar/>`_
+374 | 
+375 | `narcissist - helmholtz
+376 | <https://github.com/helmholtz/narcissist/>`_
+377 | 
+378 | `Noise-Line - Dnncha
+379 | <https://github.com/Dnncha/Noise-Line/>`_
+380 | 
+381 | `nowplaying_statusbar - MataiulS
+382 | <https://github.com/MataiulS/nowplaying>`_
+383 | 
+384 | `obmenka - vlakin
+385 | <https://github.com/vlakin/obmenka/>`_
+386 | 
+387 | `OnAir - henrik242
+388 | <https://github.com/henrik242/OnAir/>`_
+389 | 
+390 | `org-clock-dashboard - srid
+391 | <https://github.com/srid/org-clock-dashboard/>`_
+392 | 
+393 | `osx-bamboo-plan-status - spalter
+394 | <https://github.com/spalter/osx-bamboo-plan-status/>`_
+395 | 
+396 | `osx-myair - CameronEx
+397 | <https://github.com/CameronEx/osx-myair/>`_
+398 | 
+399 | `PennAppsX - yousufmsoliman
+400 | <https://github.com/yousufmsoliman/PennAppsX/>`_
+401 | 
+402 | `phd - ChrisCummins
+403 | <https://github.com/ChrisCummins/phd/>`_
+404 | 
+405 | `pokemon-go-status - pboardman
+406 | <https://github.com/pboardman/pokemon-go-status/>`_
+407 | 
+408 | `polly - interrogator
+409 | <https://github.com/interrogator/polly/>`_
+410 | 
+411 | `pompy - camilopayan
+412 | <https://github.com/camilopayan/pompy/>`_
+413 | 
+414 | `project_screen_to_lifx - emiraga
+415 | <https://github.com/emiraga/project_screen_to_lifx/>`_
+416 | 
+417 | `PSPEWC-mac - jacquesCedric
+418 | <https://github.com/jacquesCedric/PSPEWC-mac/>`_
+419 | 
+420 | `py-Timey - asakasinsky
+421 | <https://github.com/asakasinsky/py-Timey/>`_
+422 | 
+423 | `pymodoro - volflow
+424 | <https://github.com/volflow/pymodoro/>`_
+425 | 
+426 | `pySplash - Egregors
+427 | <https://github.com/Egregors/pySplash/>`_
+428 | 
+429 | `quick-grayscale - shubhamjain
+430 | <https://github.com/shubhamjain/quick-grayscale/>`_
+431 | 
+432 | `quiet - hiroshi
+433 | <https://github.com/hiroshi/quiet/>`_
+434 | 
+435 | `Radio-Crowd - EliMendelson
+436 | <https://github.com/EliMendelson/Radio-Crowd/>`_
+437 | 
+438 | `RadioBar - wass3r
+439 | <https://github.com/wass3r/RadioBar/>`_
+440 | 
+441 | `RadioBar (fork) - mdbraber
+442 | <https://github.com/mdbraber/radiobar/>`_
+443 | 
+444 | `rescuetime_statusbar - MauriceZ
+445 | <https://github.com/MauriceZ/rescuetime_statusbar/>`_
+446 | 
+447 | `rideindegochecker - josepvalls
+448 | <https://github.com/josepvalls/rideindegochecker/>`_
+449 | 
+450 | `RitsWifi - fang2hou
+451 | <https://github.com/fang2hou/RitsWifi/>`_
+452 | 
+453 | `safety-bar - pyupio
+454 | <https://github.com/pyupio/safety-bar/>`_
+455 | 
+456 | `SAT-Vocab-Quizzer - Legoben
+457 | <https://github.com/Legoben/SAT-Vocab-Quizzer/>`_
+458 | 
+459 | `sb-translate - leandroltavares
+460 | <https://github.com/leandroltavares/sb-translate>`_
+461 | 
+462 | `sharfoo - furqan-shakoor
+463 | <https://github.com/furqan-shakoor/sharfoo/>`_
+464 |  
+465 | `ShortyURLShortener - Naktrem
+466 | <https://github.com/Naktrem/ShortyURLShortener/>`_
+467 | 
+468 | `shotput - amussey
+469 | <https://github.com/amussey/shotput/>`_
+470 | 
+471 | `SingMenuData - ponyfleisch
+472 | <https://github.com/ponyfleisch/SingMenuData/>`_
+473 | 
+474 | `slack-status-bar - ericwb
+475 | <https://github.com/ericwb/slack-status-bar/>`_
+476 | 
+477 | `slackify - nikodraca
+478 | <https://github.com/nikodraca/slackify/>`_
+479 | 
+480 | `Snapgrid - VladUsatii
+481 | <https://github.com/VladUsatii/snapgrid/>`_
+482 | 
+483 | `snippets - quillford
+484 | <https://github.com/quillford/snippets/>`_
+485 | 
+486 | `sonostus - sarkkine
+487 | <https://github.com/sarkkine/sonostus/>`_
+488 | 
+489 | `Spaceapi-Desktop - UrLab
+490 | <https://github.com/UrLab/Spaceapi-Desktop/>`_
+491 | 
+492 | `SpaceSwitcher - SankaitLaroiya
+493 | <https://github.com/SankaitLaroiya/SpaceSwitcher/>`_
+494 | 
+495 | `Speck - misternate
+496 | <https://github.com/misternate/speck/>`_
+497 | 
+498 | `SpotifyLyrics - yask123
+499 | <https://github.com/yask123/SpotifyLyrics/>`_
+500 | 
+501 | `Statusbar Converter - mindaugasw
+502 | <https://github.com/mindaugasw/statusbar-converter/>`_
+503 | 
+504 | `steemticker-osx - ZachC16
+505 | <https://github.com/ZachC16/steemticker-osx/>`_
+506 | 
+507 | `Timebar - devonkong
+508 | <https://github.com/devonkong/timebar>`_
+509 | 
+510 | `Timebox - visini
+511 | <https://github.com/visini/timebox/>`_
+512 | 
+513 | `Telkom-ADSL-Data-Usage - parautenbach
+514 | <https://github.com/parautenbach/Telkom-ADSL-Data-Usage/>`_
+515 | 
+516 | `Telton - Yywww
+517 | <https://github.com/Yywww/Telton/>`_
+518 | 
+519 | `Textinator - RhetTbull
+520 | <https://github.com/RhetTbull/textinator/>`_
+521 | 
+522 | `these-days - hahayes
+523 | <https://github.com/hahayes/these-days/>`_
+524 | 
+525 | `time-tracking - willsgrigg
+526 | <https://github.com/willsgrigg/time-tracking/>`_
+527 | 
+528 | `timerbar - uberalex
+529 | <https://github.com/uberalex/timerbar/>`_
+530 | 
+531 | `tracker - jtxx000
+532 | <https://github.com/jtxx000/tracker/>`_
+533 | 
+534 | `TrojanA - chrisxiao
+535 | <https://github.com/chrisxiao/TrojanA/>`_
+536 | 
+537 | `umma - mankoff
+538 | <https://github.com/mankoff/umma/>`_
+539 | 
+540 | `upbrew - stchris
+541 | <https://github.com/stchris/upbrew/>`_
+542 | 
+543 | `uptimeIndicator - paulaborde
+544 | <https://github.com/paulaborde/uptimeIndicator/>`_
+545 | 
+546 | `urstatus - kysely
+547 | <https://github.com/kysely/urstatus/>`_
+548 | 
+549 | `uStatus - kdungs
+550 | <https://github.com/kdungs/uStatus/>`_
+551 | 
+552 | `VagrantBar - kingsdigitallab
+553 | <https://github.com/kingsdigitallab/VagrantBar/>`_
+554 | 
+555 | `voiceplay - tb0hdan
+556 | <https://github.com/tb0hdan/voiceplay/>`_
+557 | 
+558 | `volsbb - akigugale
+559 | <https://github.com/akigugale/volsbb/>`_
+560 | 
+561 | `Volumio_bar - volderette
+562 | <https://github.com/volderette/Volumio_bar/>`_
+563 | 
+564 | `votingpowerbar - therealwolf42
+565 | <https://github.com/therealwolf42/votingpowerbar/>`_
+566 | 
+567 | `VPN Handler - tsarenkotxt
+568 | <https://github.com/tsarenkotxt/vpn-handler/>`_
+569 | 
+570 | `WakeTime App - dleicht
+571 | <https://github.com/dleicht/waketime/>`_
+572 | 
+573 | `WallpDesk - L3rchal
+574 | <https://github.com/L3rchal/WallpDesk/>`_
+575 | 
+576 | `webcronic - josselinauguste
+577 | <https://github.com/josselinauguste/webcronic/>`_
+578 | 
+579 | `Whale - amka
+580 | <https://github.com/amka/Whale/>`_
+581 | 
+582 | `WhyFi - OzTamir
+583 | <https://github.com/OzTamir/WhyFi/>`_
+584 | 
+585 | `WordTime - Demonstrandum
+586 | <https://github.com/Demonstrandum/WordTime/>`_
+587 | 
+588 | `work_time_percent_applet - Benhgift
+589 | <https://github.com/Benhgift/work_time_percent_applet/>`_
+590 | 
+591 | `WorkWise - 8ern4ard
+592 | <https://github.com/8ern4ard/WorkWise/>`_
+593 | 
+594 | `xCodea - lowne
+595 | <https://github.com/lowne/xCodea/>`_
+596 | 
+597 | `yaca - drproteus
+598 | <https://github.com/drproteus/yaca/>`_
+599 | 
+600 | `Zero - beejhuff
+601 | <https://github.com/beejhuff/Zero/>`_
+602 | 
+603 | Submit a pull request to add your own!
+604 | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+605 | 
+606 | Contributing
+607 | ------------
+608 | 
+609 | If you've submitted a pull request and need it reviewed, please request a review from `@daredoes
+610 | <https://github.com/daredoes/>`_ (contributing in free time, so please be patient)
+611 | 
+
+
+--------------------------------------------------------------------------------
+/docs/App.rst:
+--------------------------------------------------------------------------------
+1 | App
+2 | ===
+3 | 
+4 | .. autoclass:: rumps.App
+5 |    :members:
+6 | 
+
+
+--------------------------------------------------------------------------------
+/docs/MenuItem.rst:
+--------------------------------------------------------------------------------
+ 1 | MenuItem
+ 2 | ========
+ 3 | 
+ 4 | .. autoclass:: rumps.MenuItem
+ 5 |    :members:
+ 6 |    :inherited-members:
+ 7 | 
+ 8 |    .. method:: d[key]
+ 9 | 
+10 |       Return the item of d with key `key`. Raises a ``KeyError`` if key is not in the map.
+11 | 
+12 |    .. method:: d[key] = value
+13 | 
+14 |       Set `d[key]` to `value` if `key` does not exist in d. `value` will be converted to a `MenuItem` object if not one already.
+15 | 
+16 |    .. method:: del d[key]
+17 | 
+18 |       Remove `d[key]` from d. Raises a ``KeyError`` if `key` is not in the map.
+19 | 
+
+
+--------------------------------------------------------------------------------
+/docs/Response.rst:
+--------------------------------------------------------------------------------
+1 | Response
+2 | ========
+3 | 
+4 | .. autoclass:: rumps.rumps.Response
+5 |    :members:
+6 | 
+
+
+--------------------------------------------------------------------------------
+/docs/Timer.rst:
+--------------------------------------------------------------------------------
+1 | Timer
+2 | =====
+3 | 
+4 | .. autoclass:: rumps.Timer
+5 |    :members:
+6 | 
+
+
+--------------------------------------------------------------------------------
+/docs/Window.rst:
+--------------------------------------------------------------------------------
+1 | Window
+2 | ======
+3 | 
+4 | .. autoclass:: rumps.Window
+5 |    :members:
+6 | 
+
+
+--------------------------------------------------------------------------------
+/docs/alert.rst:
+--------------------------------------------------------------------------------
+1 | alert
+2 | =====
+3 | 
+4 | .. autofunction:: rumps.alert
+5 | 
+
+
+--------------------------------------------------------------------------------
+/docs/application_support.rst:
+--------------------------------------------------------------------------------
+1 | application_support
+2 | ===================
+3 | 
+4 | .. autofunction:: rumps.application_support
+5 | 
+
+
+--------------------------------------------------------------------------------
+/docs/classes.rst:
+--------------------------------------------------------------------------------
+ 1 | rumps Classes
+ 2 | =============
+ 3 | 
+ 4 | .. toctree::
+ 5 |    :maxdepth: 1
+ 6 | 
+ 7 |    App
+ 8 |    MenuItem
+ 9 |    Window
+10 |    Response
+11 |    Timer
+12 | 
+
+
+--------------------------------------------------------------------------------
+/docs/clicked.rst:
+--------------------------------------------------------------------------------
+1 | clicked
+2 | =======
+3 | 
+4 | .. autofunction:: rumps.clicked
+5 | 
+
+
+--------------------------------------------------------------------------------
+/docs/creating.rst:
+--------------------------------------------------------------------------------
+ 1 | Creating Standalone Applications
+ 2 | ================================
+ 3 | 
+ 4 | If you want to create your own bundled .app you need to download py2app: https://pythonhosted.org/py2app/
+ 5 | 
+ 6 | For creating standalone apps, just make sure to include ``rumps`` in the ``packages`` list. Most simple statusbar-based
+ 7 | apps are just "background" apps (no icon in the dock; inability to tab to the application) so it is likely that you
+ 8 | would want to set ``'LSUIElement'`` to ``True``. A basic ``setup.py`` would look like,
+ 9 | 
+10 | .. code-block:: python
+11 | 
+12 |     from setuptools import setup
+13 | 
+14 |     APP = ['example_class.py']
+15 |     DATA_FILES = []
+16 |     OPTIONS = {
+17 |         'argv_emulation': True,
+18 |         'plist': {
+19 |             'LSUIElement': True,
+20 |         },
+21 |         'packages': ['rumps'],
+22 |     }
+23 | 
+24 |     setup(
+25 |         app=APP,
+26 |         data_files=DATA_FILES,
+27 |         options={'py2app': OPTIONS},
+28 |         setup_requires=['py2app'],
+29 |     )
+30 | 
+31 | With this you can then create a standalone,
+32 | 
+33 | .. code-block:: bash
+34 | 
+35 |     python setup.py py2app
+36 | 
+
+
+--------------------------------------------------------------------------------
+/docs/debug_mode.rst:
+--------------------------------------------------------------------------------
+1 | debug_mode
+2 | ==========
+3 | 
+4 | .. autofunction:: rumps.debug_mode
+5 | 
+
+
+--------------------------------------------------------------------------------
+/docs/debugging.rst:
+--------------------------------------------------------------------------------
+ 1 | Debugging Your Application
+ 2 | ==========================
+ 3 | 
+ 4 | When writing your application you will want to turn on debugging mode.
+ 5 | 
+ 6 | .. code-block:: python
+ 7 | 
+ 8 |     import rumps
+ 9 |     rumps.debug_mode(True)
+10 | 
+11 | If you are running your program from the interpreter, you should see the informational messages.
+12 | 
+13 | .. code-block:: bash
+14 | 
+15 |     python {your app name}.py
+16 | 
+17 | If testing the .app generated using py2app, to be able to see these messages you must not,
+18 | 
+19 | .. code-block:: bash
+20 | 
+21 |     open {your app name}.app
+22 | 
+23 | but instead run the executable. While within the directory containing the .app,
+24 | 
+25 | .. code-block:: bash
+26 | 
+27 |     ./{your app name}.app/Contents/MacOS/{your app name}
+28 | 
+29 | And, by default, your .app will be in ``dist`` folder after running ``python setup.py py2app``. So of course that would then be,
+30 | 
+31 | .. code-block:: bash
+32 | 
+33 |     ./dist/{your app name}.app/Contents/MacOS/{your app name}
+34 | 
+
+
+--------------------------------------------------------------------------------
+/docs/examples.rst:
+--------------------------------------------------------------------------------
+  1 | Examples
+  2 | ==============
+  3 | 
+  4 | Sometimes the best way to learn something is by example. Form your own application based on some of these samples.
+  5 | 
+  6 | Simple subclass structure
+  7 | -------------------------
+  8 | 
+  9 | Just a straightforward application,
+ 10 | 
+ 11 | .. code-block:: python
+ 12 | 
+ 13 |     import rumps
+ 14 | 
+ 15 |     class AwesomeStatusBarApp(rumps.App):
+ 16 |         def __init__(self):
+ 17 |             super(AwesomeStatusBarApp, self).__init__("Awesome App")
+ 18 |             self.menu = ["Preferences", "Silly button", "Say hi"]
+ 19 | 
+ 20 |         @rumps.clicked("Preferences")
+ 21 |         def prefs(self, _):
+ 22 |             rumps.alert("jk! no preferences available!")
+ 23 | 
+ 24 |         @rumps.clicked("Silly button")
+ 25 |         def onoff(self, sender):
+ 26 |             sender.state = not sender.state
+ 27 | 
+ 28 |         @rumps.clicked("Say hi")
+ 29 |         def sayhi(self, _):
+ 30 |             rumps.notification("Awesome title", "amazing subtitle", "hi!!1")
+ 31 | 
+ 32 |     if __name__ == "__main__":
+ 33 |         AwesomeStatusBarApp().run()
+ 34 | 
+ 35 | Decorating any functions
+ 36 | ------------------------
+ 37 | 
+ 38 | The following code demonstrates how you can decorate functions with :func:`rumps.clicked` whether or not they are inside a subclass of :class:`rumps.App`. The parameter ``sender``, the :class:`rumps.MenuItem` object, is correctly passed to both functions even though ``button`` needs an instance of ``SomeApp`` as its ``self`` parameter.
+ 39 | 
+ 40 | Usually functions registered as callbacks should accept one and only one argument but an `App` subclass is viewed as a special case as its use can provide a simple and pythonic way to implement the logic behind an application.
+ 41 | 
+ 42 | .. code-block:: python
+ 43 | 
+ 44 |     from rumps import *
+ 45 | 
+ 46 |     @clicked('Testing')
+ 47 |     def tester(sender):
+ 48 |         sender.state = not sender.state
+ 49 | 
+ 50 |     class SomeApp(rumps.App):
+ 51 |         def __init__(self):
+ 52 |             super(SomeApp, self).__init__(type(self).__name__, menu=['On', 'Testing'])
+ 53 |             rumps.debug_mode(True)
+ 54 | 
+ 55 |         @clicked('On')
+ 56 |         def button(self, sender):
+ 57 |             sender.title = 'Off' if sender.title == 'On' else 'On'
+ 58 |             Window("I can't think of a good example app...").run()
+ 59 | 
+ 60 |     if __name__ == "__main__":
+ 61 |         SomeApp().run()
+ 62 | 
+ 63 | New features in 0.2.0
+ 64 | ---------------------
+ 65 | 
+ 66 | Menu items can be disabled (greyed out) by passing ``None`` to :meth:`rumps.MenuItem.set_callback`. :func:`rumps.alert` no longer requires `title` (will use a default localized string) and allows for custom `cancel` button text. The new parameter `quit_button` for :class:`rumps.App` allows for custom quit button text or removal of the quit button entirely by passing ``None``.
+ 67 | 
+ 68 | .. warning::
+ 69 |    By setting :attr:`rumps.App.quit_button` to ``None`` you **must include another way to quit the application** by somehow calling :func:`rumps.quit_application` otherwise you will have to force quit.
+ 70 | 
+ 71 | .. code-block:: python
+ 72 | 
+ 73 |     import rumps
+ 74 |     
+ 75 |     rumps.debug_mode(True)
+ 76 |     
+ 77 |     @rumps.clicked('Print Something')
+ 78 |     def print_something(_):
+ 79 |         rumps.alert(message='something', ok='YES!', cancel='NO!')
+ 80 |     
+ 81 |     
+ 82 |     @rumps.clicked('On/Off Test')
+ 83 |     def on_off_test(_):
+ 84 |         print_button = app.menu['Print Something']
+ 85 |         if print_button.callback is None:
+ 86 |             print_button.set_callback(print_something)
+ 87 |         else:
+ 88 |             print_button.set_callback(None)
+ 89 |     
+ 90 |     
+ 91 |     @rumps.clicked('Clean Quit')
+ 92 |     def clean_up_before_quit(_):
+ 93 |         print 'execute clean up code'
+ 94 |         rumps.quit_application()
+ 95 |     
+ 96 |     
+ 97 |     app = rumps.App('Hallo Thar', menu=['Print Something', 'On/Off Test', 'Clean Quit'], quit_button=None)
+ 98 |     app.run()
+ 99 | 
+100 | 
+
+
+--------------------------------------------------------------------------------
+/docs/functions.rst:
+--------------------------------------------------------------------------------
+ 1 | rumps Functions
+ 2 | ===============
+ 3 | 
+ 4 | .. toctree::
+ 5 |    :maxdepth: 1
+ 6 | 
+ 7 |    notifications
+ 8 |    clicked
+ 9 |    timerfunc
+10 |    timers
+11 |    application_support
+12 |    notification
+13 |    alert
+14 |    debug_mode
+15 |    quit_application
+16 | 
+
+
+--------------------------------------------------------------------------------
+/docs/index.rst:
+--------------------------------------------------------------------------------
+ 1 | .. rumps documentation master file, created by
+ 2 |    sphinx-quickstart on Mon Aug  4 23:56:00 2014.
+ 3 |    You can adapt this file completely to your liking, but it should at least
+ 4 |    contain the root `toctree` directive.
+ 5 | 
+ 6 | Welcome to rumps
+ 7 | ================
+ 8 | 
+ 9 | rumps is...
+10 | 
+11 | Ridiculously Uncomplicated Mac os x Python Statusbar apps!
+12 | 
+13 | rumps exposes Objective-C classes as Python classes and functions which greatly simplifies the process of creating a statusbar application.
+14 | 
+15 | Say you have a Python program and want to create a relatively simple interface for end user interaction on a Mac. There are a number of GUI tools available to Python programmers (PyQt, Tkinter, PyGTK, WxPython, etc.) but most are overkill if you just want to expose a few configuration options or an execution switch.
+16 | 
+17 | If all you want is a statusbar app, rumps makes it easy.
+18 | 
+19 | GitHub project: https://github.com/jaredks/rumps
+20 | 
+21 | Contents:
+22 | 
+23 | .. toctree::
+24 |    :maxdepth: 2
+25 | 
+26 |    examples
+27 |    creating
+28 |    debugging
+29 |    classes
+30 |    functions
+31 | 
+32 | 
+33 | Indices and tables
+34 | ==================
+35 | 
+36 | * :ref:`genindex`
+37 | * :ref:`modindex`
+38 | * :ref:`search`
+39 | 
+
+
+--------------------------------------------------------------------------------
+/docs/notification.rst:
+--------------------------------------------------------------------------------
+1 | notification
+2 | ============
+3 | 
+4 | .. autofunction:: rumps.notification
+5 | 
+
+
+--------------------------------------------------------------------------------
+/docs/notifications.rst:
+--------------------------------------------------------------------------------
+1 | notifications
+2 | =============
+3 | 
+4 | .. autofunction:: rumps.notifications
+5 | 
+
+
+--------------------------------------------------------------------------------
+/docs/quit_application.rst:
+--------------------------------------------------------------------------------
+1 | quit_application
+2 | ================
+3 | 
+4 | .. autofunction:: rumps.quit_application
+5 | 
+
+
+--------------------------------------------------------------------------------
+/docs/timerfunc.rst:
+--------------------------------------------------------------------------------
+1 | timer
+2 | =====
+3 | 
+4 | .. autofunction:: rumps.timer
+5 | 
+
+
+--------------------------------------------------------------------------------
+/docs/timers.rst:
+--------------------------------------------------------------------------------
+1 | timers
+2 | ======
+3 | 
+4 | .. autofunction:: rumps.timers
+5 | 
+
+
+--------------------------------------------------------------------------------
