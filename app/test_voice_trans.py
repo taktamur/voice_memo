@@ -9,6 +9,7 @@ import unittest
 import os
 import tempfile
 import shutil
+import subprocess
 from unittest.mock import patch, MagicMock
 
 from voice_trans import VoiceTrans
@@ -98,7 +99,7 @@ class TestVoiceTrans(unittest.TestCase):
         mp3_file = self.create_test_mp3("test.MP3")
         
         # モックの設定
-        mock_run.side_effect = subprocess.CalledProcessError(1, 'whisper', stderr=b'エラーメッセージ')
+        mock_run.side_effect = subprocess.CalledProcessError(1, 'whisper', stderr=b'Error message')
         
         result = self.voice_trans.transcribe_file(mp3_file)
         self.assertFalse(result)
