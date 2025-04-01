@@ -1,0 +1,40 @@
+#!/usr/bin/env rake
+# -*- coding: utf-8 -*-
+
+desc "VoiceMemoアプリケーション用のタスク"
+
+namespace :test do
+  desc "全てのユニットテストを実行"
+  task :all do
+    sh "cd #{File.dirname(__FILE__)} && python3 -m unittest discover -v"
+  end
+
+  desc "voice_sync のテストを実行"
+  task :sync do
+    sh "cd #{File.dirname(__FILE__)} && python3 -m unittest test_voice_sync.py -v"
+  end
+
+  desc "voice_trans のテストを実行"
+  task :trans do
+    sh "cd #{File.dirname(__FILE__)} && python3 -m unittest test_voice_trans.py -v"
+  end
+end
+
+namespace :run do
+  desc "ボイスレコーダーからMP3ファイルを同期"
+  task :sync do
+    sh "cd #{File.dirname(__FILE__)} && python3 voice_sync.py"
+  end
+
+  desc "MP3ファイルをテキストに変換"
+  task :trans do
+    sh "cd #{File.dirname(__FILE__)} && python3 voice_trans.py"
+  end
+
+  desc "同期してからテキスト変換を実行"
+  task :all => ['run:sync', 'run:trans'] do
+    puts "同期とテキスト変換が完了しました"
+  end
+end
+
+task :default => "test:all"
