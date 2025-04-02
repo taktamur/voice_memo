@@ -44,7 +44,7 @@ class VoiceMemoApp(rumps.App):
         # メニューの設定
         self.menu = [
             "ボイスメモをコピー",
-            "テキスト起こし",
+            "Whisperで文字起こし",  # 名前を変更してWhisperで文字起こしであることを明確に
             None,  # セパレータ
             rumps.MenuItem("自動検出", callback=self.toggle_auto_detection),
             "設定"
@@ -113,16 +113,28 @@ class VoiceMemoApp(rumps.App):
         finally:
             self.title = "Voice Memo"
     
-    @rumps.clicked("テキスト起こし")
+    @rumps.clicked("Whisperで文字起こし")
     def transcribe_voice_memos(self, _):
-        """ボイスメモをテキスト起こしする機能"""
+        """ボイスメモをWhisperでテキスト起こしする機能"""
         try:
+            # 確認ダイアログを表示
+            response = rumps.alert(
+                title="文字起こし確認",
+                message="Whisperを使ってボイスメモの文字起こしを行いますか？\nファイル数によっては処理に時間がかかる場合があります。",
+                ok="実行",
+                cancel="キャンセル"
+            )
+            
+            # キャンセルされた場合は処理を行わない
+            if response == 0:  # キャンセルボタンが押された場合
+                return
+            
             # 別スレッドで実行して、UIをブロックしないようにする
             threading.Thread(target=self._run_voice_trans).start()
         except Exception as e:
             rumps.alert(
                 title="エラー",
-                message=f"テキスト起こし中にエラーが発生しました: {str(e)}",
+                message=f"文字起こし中にエラーが発生しました: {str(e)}",
                 ok="OK"
             )
     
@@ -148,7 +160,7 @@ class VoiceMemoApp(rumps.App):
                 rumps.notification(
                     title="Voice Memo",
                     subtitle="情報",
-                    message="テキスト起こしが必要なファイルはありません",
+                    message="文字起こしが必要なファイルはありません",
                     sound=True
                 )
                 self.title = "Voice Memo"
@@ -178,7 +190,7 @@ class VoiceMemoApp(rumps.App):
                 rumps.notification(
                     title="Voice Memo",
                     subtitle="処理完了",
-                    message="すべてのMP3ファイルのテキスト起こしが完了しました",
+                    message="すべてのMP3ファイルの文字起こしが完了しました",
                     sound=True
                 )
             else:
