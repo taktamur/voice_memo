@@ -74,6 +74,7 @@ class VoiceMemoApp(rumps.App):
     
     def _run_voice_sync(self):
         """VoiceSyncを実行する内部メソッド"""
+        time.sleep(1)
         try:
             self.title = "処理中..."
             voice_sync = VoiceSync()
