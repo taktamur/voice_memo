@@ -67,7 +67,3 @@ class VoiceConfig:
         config_dir.mkdir(exist_ok=True)
         return config_dir / "config.yaml"
     
-    def load_config(self):
-        """設定ファイルから設定を読み込む"""
-        try:
-            if self.config_file.
