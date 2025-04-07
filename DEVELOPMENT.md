@@ -9,9 +9,10 @@
 
 - rumps - Macのステータスバーアプリケーションフレームワーク
 - watchdog - ファイルシステム監視ライブラリ（USBデバイスの検出に必須）
+- streamlit - Webアプリケーションフレームワーク（ビューア機能）
 
 ```
-pip install rumps watchdog
+pip install rumps watchdog streamlit
 ```
 
 ## ディレクトリ構造
@@ -20,6 +21,7 @@ pip install rumps watchdog
   - `/app/src` - Pythonソースファイル
   - `/app/tests` - テストファイル
 - `/docs` - ドキュメント
+- `/streamlit` - Streamlitビューアアプリケーション
 
 ## TODOリスト
 
@@ -77,13 +79,30 @@ pip install rumps watchdog
 - [x] 実行前に確認ダイアログを表示して、ユーザーの明示的な許可を得るように変更
 - [x] メニューから選択した時に文字起こしが動くようにする（自動では動作しない）
 
+### Streamlitアプリケーション開発
+
+- [x] ボイスメモ一覧表示機能の実装
+  - Streamlitを使用したシンプルなWebアプリケーション
+  - `~/voice_memo/*.txt`ファイルを日付ごとにグループ化して表示
+  - 日付ごとの折りたたみ式表示
+  - テキストエリアで内容を表示
+- [x] Rake タスクの追加
+  - プロジェクトルートの `Rakefile` に `streamlit` タスクを追加
+  - `voicememo.rake` に `voicememo:view` タスクを追加
+- [x] クリップボード機能
+  - JavaScript経由で実装したコピー機能
+  - 即時実行によるユーザービリティ向上
+  - コピー通知の視覚的フィードバック
+
 ### 将来的な実装
 
 - [x] 完全なGUIアプリケーション化（rumpsを使用）
 - [x] 既存の機能（voice_sync, voice_trans）とrumpsアプリの統合
+- [x] Streamlitによるテキストビューア実装
 - [ ] 自動起動機能の実装
 - [ ] 設定ファイルのサポート
 - [ ] 進捗情報やステータスの詳細表示
+- [ ] Streamlitビューアの機能拡張（検索、フィルター、編集機能など）
 
 ### Issue #21: リファクタリング候補の調査
 
@@ -107,9 +126,4 @@ pip install rumps watchdog
 
 4. **モジュール間の依存関係見直しと疎結合化** (Issue #27)
    - モジュール間依存関係の整理
-   - インターフェース定義による疎結合化
-
-5. **ユーザーインターフェース改善とUI/UX向上** (Issue #28)
-   - メニュー構造の改善
-   - 進捗表示の視覚化
-   - 設定UIの実装
+   - インターフェース定義による
